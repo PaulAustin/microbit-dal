@@ -82,7 +82,7 @@ MicroBitUARTService::MicroBitUARTService(BLEDevice &_ble, uint8_t rxBufferSize, 
 
     rxCharacteristic = new GattCharacteristic(UARTServiceRXCharacteristicUUID, txBuffer, 1, txBufferSize, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_INDICATE);
 
-    GattCharacteristic *charTable[] = {txCharacteristic, &rxCharacteristic};
+    GattCharacteristic *charTable[] = {&txCharacteristic, rxCharacteristic};
 
     GattService uartService(UARTServiceUUID, charTable, sizeof(charTable) / sizeof(GattCharacteristic *));
 
