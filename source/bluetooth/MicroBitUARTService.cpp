@@ -41,7 +41,7 @@ static uint8_t txBufferHead = 0;
 static uint8_t txBufferTail = 0;
 
 static GattCharacteristic* rxCharacteristic = NULL;
-
+static GattCharacteristic* txCharacteristic = NULL;
 /**
   * A callback function for whenever a Bluetooth device consumes our TX Buffer
   */
@@ -78,17 +78,15 @@ MicroBitUARTService::MicroBitUARTService(BLEDevice &_ble, uint8_t rxBufferSize, 
     txBufferTail = 0;
     this->txBufferSize = txBufferSize;
 
-    GattCharacteristic txCharacteristic(UARTServiceTXCharacteristicUUID, rxBuffer, 1, rxBufferSize, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_WRITE | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_WRITE_WITHOUT_RESPONSE);
-
+    txCharacteristic = new GattCharacteristic(UARTServiceTXCharacteristicUUID, rxBuffer, 1, rxBufferSize, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_WRITE | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_WRITE_WITHOUT_RESPONSE);
     rxCharacteristic = new GattCharacteristic(UARTServiceRXCharacteristicUUID, txBuffer, 1, txBufferSize, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_INDICATE);
 
-    GattCharacteristic *charTable[] = {&txCharacteristic, rxCharacteristic};
-
-    GattService uartService(UARTServiceUUID, charTable, sizeof(charTable) / sizeof(GattCharacteristic *));
-
+    charTable.rxCharacteristic = rxCharacteristic;
+    charTable.txCharacteristic = txCharacteristic;
+    GattService uartService(UARTServiceUUID, &charTable.rxCharacteristic, sizeof(charTable) / sizeof(GattCharacteristic *));
     _ble.addService(uartService);
 
-    this->txCharacteristicHandle = txCharacteristic.getValueAttribute().getHandle();
+    this->txCharacteristicHandle = txCharacteristic->getValueAttribute().getHandle();
 
     _ble.gattServer().onDataWritten(this, &MicroBitUARTService::onDataWritten);
     _ble.gattServer().onConfirmationReceived(on_confirmation);
